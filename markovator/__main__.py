@@ -20,13 +20,32 @@ if __name__ == '__main__':
             nargs='?',
             default=1,
             help='Number of sentences to generate')
+    parser.add_argument('-o', '--order',
+            dest='order',
+            action='store',
+            type=int,
+            default=3,
+            help='Chaining order')
+    parser.add_argument('-c', '--by-char',
+            dest='bychar',
+            action='store_true',
+            help='Split by character rather than by word')
     args = parser.parse_args()
 
     sentences = []
     with open_utf8(args.textfile) as fp:
         sentences = fp.readlines()
 
-    m = Markovator((s.strip().split() for s in sentences))
+    sa = []
+    if args.bychar:
+        sa = (list(s.strip()) for s in sentences)
+    else:
+        sa = (s.strip().split() for s in sentences)
+    m = Markovator(sa, order=args.order)
     for i in range(args.num):
-        print(u' '.join(m.generate()))
+        a = m.generate()
+        if args.bychar:
+            print(u''.join(m.generate()))
+        else:
+            print(u' '.join(m.generate()))
 
