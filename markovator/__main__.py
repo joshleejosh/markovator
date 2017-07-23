@@ -26,10 +26,21 @@ if __name__ == '__main__':
             type=int,
             default=3,
             help='Chaining order')
+    parser.add_argument('-r', '--retries',
+            dest='retries',
+            action='store',
+            type=int,
+            default=20,
+            help='Number of retries to avoid overfits')
     parser.add_argument('-c', '--by-char',
             dest='bychar',
             action='store_true',
             help='Split by character rather than by word')
+    parser.add_argument('-v', '--verbose',
+            dest='verbose',
+            action='count',
+            default=0,
+            help='More debug junk')
     args = parser.parse_args()
 
     sentences = []
@@ -41,7 +52,7 @@ if __name__ == '__main__':
         sa = (list(s.strip()) for s in sentences)
     else:
         sa = (s.strip().split() for s in sentences)
-    m = Markovator(sa, order=args.order)
+    m = Markovator(sa, order=args.order, verbose=args.verbose)
     for i in range(args.num):
         a = m.generate()
         if args.bychar:

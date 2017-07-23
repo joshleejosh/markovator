@@ -21,9 +21,10 @@ class Markovator:
 
     Order determines the length of the trailing chain during generation.
 
-    Verbose gives you debug output to console.
+    Verbose gives you debug output to console. Higher values give more output.
     """
-    def __init__(self, data, filter=None, order=2, verbose=False):
+
+    def __init__(self, data, filter=None, order=2, verbose=0):
         self.cache = defaultdict(lambda: defaultdict(int))
         self.corpus = self._cleanse_corpus(data)
         self.order = order
@@ -43,11 +44,11 @@ class Markovator:
                 tokens.append(word)
             self.cache[tuple(tokens)][TERMINATOR] += 1
 
-    """
-    Corpus data *should* be a 2-D array, but if the user passed in either a
-    single string or a 1D list of strings, try to split things up.
-    """
     def _cleanse_corpus(self, data):
+        """
+        Corpus data *should* be a 2-D array, but if the user passed in either
+        a single string or a 1D list of strings, try to split things up.
+        """
         if not data:
             return []
         tt = str
@@ -89,21 +90,22 @@ class Markovator:
             nextword = self._pick(tuple(tokens))
         return rv
 
-    """
-    Generate a sequence.
-
-    Returns a list of words, which can be `join()`ed for a textual sentence.
-
-    Filter is a function f(a) that returns True if the sentence should be used,
-    and False if we should reject it and try again. If no filter is specified,
-    the default filter checks to see that we haven't exactly recreated an entry
-    from the input corpus.
-
-    Retries is the number of filter-failure retries that will be attempted
-    before giving up. If the retry limit is exceeded, the last attempt wil be
-    returned, even if it's bad.
-    """
     def generate(self, filter=None, retries=20):
+        """
+        Generate a sequence.
+
+        Returns a list of words, which can be `join()`ed for a textual
+        sentence.
+
+        Filter is a function f(sentence) that returns True if the given
+        generated sequence should be kept, and False if we should reject it and
+        try again. If no filter is specified, the default filter checks to see
+        that we haven't exactly recreated an entry from the input corpus.
+
+        Retries is the number of filter-failure retries that will be attempted
+        before giving up. If the retry limit is exceeded, the last attempt wil
+        be returned, even if it's bad.
+        """
         if not self.cache:
             if self.verbose:
                 print('No data to generate from')
@@ -117,9 +119,11 @@ class Markovator:
         rv = self._chain()
         if retries > 0:
             while not filter(rv) and faili < retries:
-                if self.verbose:
+                if self.verbose > 1:
                     print('Filter rejected [%s] (%d)'%(' '.join(rv), faili))
                 faili += 1
                 rv = self._chain()
+        #if faili >= retries and self.verbose:
+        #    print('Too many retries [%s]'%rv)
         return rv
 
