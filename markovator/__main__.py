@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 from . import Markovator
 
 if __name__ == '__main__':
@@ -52,11 +53,15 @@ if __name__ == '__main__':
         sa = (list(s.strip()) for s in sentences)
     else:
         sa = (s.strip().split() for s in sentences)
+
     m = Markovator(sa, order=args.order, verbose=args.verbose)
     for i in range(args.num):
-        a = m.generate()
+        a = m.generate(retries=args.retries)
+        if sys.version_info < (3, 0, 0):
+            a = [codecs.encode(i, 'utf-8') for i in a]
+
         if args.bychar:
-            print(u''.join(m.generate()))
+            print(''.join(a))
         else:
-            print(u' '.join(m.generate()))
+            print(' '.join(a))
 

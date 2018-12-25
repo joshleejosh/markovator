@@ -38,7 +38,7 @@ class Markovator:
             for word in sentence:
                 if filter and not filter(word):
                     if self.verbose:
-                        print('Filter rejected input word [%s]'%word)
+                        sys.stderr.write('Filter rejected input word [%s]\n'%word)
                     continue
                 self.cache[tuple(tokens)][word] += 1
                 tokens.append(word)
@@ -73,11 +73,10 @@ class Markovator:
         for o,c in opts.items():
             top += c
             if top >= pik:
-                #print('picked', t, opts, tot, pik, top, o)
                 return o
 
         # shouldn't get here
-        print('ERROR: couldn\'t pick from [%s][%s]: [%d] [%d] [%d]'%(t, opts, tot, pik, top))
+        sys.stderr.write('ERROR: couldn\'t pick from [%s][%s]: [%d] [%d] [%d]\n'%(t, opts, tot, pik, top))
         return random.choice(opts.keys()) # panic pick
 
     def _chain(self):
@@ -108,7 +107,7 @@ class Markovator:
         """
         if not self.cache:
             if self.verbose:
-                print('No data to generate from')
+                sys.stderr.write('No data to generate from\n')
             return ''
 
         if not filter:
@@ -120,10 +119,10 @@ class Markovator:
         if retries > 0:
             while not filter(rv) and faili < retries:
                 if self.verbose > 1:
-                    print('Filter rejected [%s] (%d)'%(' '.join(rv), faili))
+                    sys.stderr.write('Filter rejected [%s] (%d)\n'%(' '.join(rv), faili))
                 faili += 1
                 rv = self._chain()
-        #if faili >= retries and self.verbose:
-        #    print('Too many retries [%s]'%rv)
+        if faili >= retries and self.verbose:
+            sys.stderr.write('Too many retries [%s]\n'%(' '.join(rv)))
         return rv
 
